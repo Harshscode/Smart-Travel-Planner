@@ -1,0 +1,27 @@
+{
+  "name": "smart-travel-planner",
+  "version": "1.0.0",
+  "description": "Smart Travel Planner - Plan your trips with weather and budget insights",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "travel",
+    "planner",
+    "express",
+    "weather",
+    "budget"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^5.0.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "node-fetch": "^2.7.0"
+  }
+}

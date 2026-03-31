@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | Smart Travel Planner</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/dashboard" class="nav-brand">
+                <i class="fas fa-plane-departure"></i> Smart Travel Planner
+            </a>
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/add-trip" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Add Trip
+                </a>
+            </div>
+            <div class="nav-user">
+                <span class="user-welcome">
+                    <i class="fas fa-user-circle"></i> <%= user.username %>
+                </span>
+                <a href="/logout" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1>My Dashboard</h1>
+                <p class="page-subtitle">Welcome back, <strong><%= user.username %></strong>! Here's an overview of your trips.</p>
+            </div>
+            <a href="/add-trip" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Trip
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;">
+                    <i class="fas fa-suitcase-rolling"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><%= stats.totalTrips %></div>
+                    <div class="stat-label">Total Trips</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e8f5e9; color: #388e3c;">
+                    <i class="fas fa-plane"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><%= stats.upcomingTrips %></div>
+                    <div class="stat-label">Upcoming</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fff3e0; color: #f57c00;">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><%= stats.pastTrips %></div>
+                    <div class="stat-label">Past Trips</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #f3e5f5; color: #7b1fa2;">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">$<%= stats.totalBudget.toLocaleString() %></div>
+                    <div class="stat-label">Total Budget</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather & Exchange Rate Tools -->
+        <div class="tools-section">
+            <h2><i class="fas fa-tools"></i> Travel Tools</h2>
+
+            <!-- Weather Checker -->
+            <div class="tool-card">
+                <h3><i class="fas fa-cloud-sun"></i> Check Destination Weather</h3>
+                <div class="tool-form">
+                    <input type="text" id="weatherCity" placeholder="Enter city name (e.g., Paris, Tokyo)">
+                    <button class="btn btn-primary" onclick="checkWeather()">
+                        <i class="fas fa-search"></i> Check Weather
+                    </button>
+                </div>
+                <div id="weatherResult" class="tool-result hidden"></div>
+            </div>
+
+            <!-- Currency Converter -->
+            <div class="tool-card">
+                <h3><i class="fas fa-coins"></i> Currency Converter</h3>
+                <div class="tool-form converter-form">
+                    <input type="number" id="convertAmount" placeholder="Amount" min="0" step="0.01">
+                    <select id="convertFrom">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                        <option value="CHF">CHF</option>
+                        <option value="CNY">CNY</option>
+                        <option value="INR">INR</option>
+                        <option value="MXN">MXN</option>
+                    </select>
+                    <i class="fas fa-arrow-right converter-arrow"></i>
+                    <select id="convertTo">
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                        <option value="CHF">CHF</option>
+                        <option value="CNY">CNY</option>
+                        <option value="INR">INR</option>
+                        <option value="MXN">MXN</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="convertCurrency()">
+                        <i class="fas fa-exchange-alt"></i> Convert
+                    </button>
+                </div>
+                <div id="conversionResult" class="tool-result hidden"></div>
+            </div>
+        </div>
+
+        <!-- Trips List -->
+        <div class="trips-section">
+            <h2><i class="fas fa-map-marked-alt"></i> My Trips</h2>
+
+            <% if (trips.length === 0) { %>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h3>No trips yet</h3>
+                    <p>You haven't added any trips. Start planning your next adventure!</p>
+                    <a href="/add-trip" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Your First Trip
+                    </a>
+                </div>
+            <% } else { %>
+                <div class="trips-grid">
+                    <% trips.forEach(function(trip) {
+                        const startDate = new Date(trip.startDate);
+                        const endDate = new Date(trip.endDate);
+                        const now = new Date();
+                        const isUpcoming = startDate >= now;
+                        const isPast = endDate < now;
+
+                        // Calculate trip duration
+                        const durationMs = endDate - startDate;
+                        const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24)) + 1;
+
+                        // Format dates
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        const startStr = startDate.toLocaleDateString('en-US', options);
+                        const endStr = endDate.toLocaleDateString('en-US', options);
+                    %>
+                        <div class="trip-card <%= isPast ? 'trip-past' : '' %>">
+                            <div class="trip-card-header">
+                                <div class="trip-destination">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <h3><%= trip.destination %></h3>
+                                </div>
+                                <div class="trip-status <%= isPast ? 'status-past' : 'status-upcoming' %>">
+                                    <%= isPast ? 'Past' : 'Upcoming' %>
+                                </div>
+                            </div>
+
+                            <div class="trip-card-body">
+                                <div class="trip-detail">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span><%= startStr %> — <%= endStr %></span>
+                                </div>
+                                <div class="trip-detail">
+                                    <i class="fas fa-clock"></i>
+                                    <span><%= durationDays %> day<%= durationDays !== 1 ? 's' : '' %></span>
+                                </div>
+                                <div class="trip-detail">
+                                    <i class="fas fa-wallet"></i>
+                                    <span><%= trip.currency %> <%= parseFloat(trip.budget).toLocaleString() %></span>
+                                </div>
+                                <% if (trip.notes) { %>
+                                    <div class="trip-detail trip-notes">
+                                        <i class="fas fa-sticky-note"></i>
+                                        <span><%= trip.notes %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="trip-card-footer">
+                                <button class="btn btn-sm btn-outline" onclick="checkWeatherForTrip('<%= trip.destination %>')">
+                                    <i class="fas fa-cloud-sun"></i> Weather
+                                </button>
+                                <div class="trip-actions">
+                                    <a href="/edit-trip/<%= trip.id %>" class="btn btn-sm btn-secondary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="confirmDelete('<%= trip.id %>', '<%= trip.destination %>')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+
+    </main>
+
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Delete Trip?</h3>
+            </div>
+            <p id="deleteModalText">Are you sure you want to delete this trip? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <a id="confirmDeleteBtn" href="#" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script src="/js/dashboard.js"></script>
+
+</body>
+</html>

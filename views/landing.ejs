@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | Smart Travel Planner</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="landing-body">
+
+    <!-- ===== LANDING PAGE ===== -->
+    <div class="landing-wrapper">
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <nav class="landing-nav">
+                <div class="nav-brand">
+                    <i class="fas fa-plane-departure"></i> Smart Travel Planner
+                </div>
+                <div class="nav-links">
+                    <a href="/login" class="btn btn-outline">Log In</a>
+                    <a href="/register" class="btn btn-primary">Get Started</a>
+                </div>
+            </nav>
+
+            <div class="hero-content">
+                <h1>Plan Your Next Adventure <span class="highlight">Smartly</span></h1>
+                <p>
+                    Keep track of your trips, check weather forecasts for your destinations,
+                    and manage your travel budget with live exchange rates — all in one place.
+                </p>
+                <div class="hero-buttons">
+                    <a href="/register" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i> Start Planning Free
+                    </a>
+                    <a href="/login" class="btn btn-outline btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> I Have an Account
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="travel-card-preview">
+                    <div class="tc-header">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Trip Preview</span>
+                    </div>
+                    <div class="tc-body">
+                        <div class="tc-row"><i class="fas fa-city"></i> Paris, France</div>
+                        <div class="tc-row"><i class="fas fa-calendar"></i> Jun 15 - Jun 22, 2025</div>
+                        <div class="tc-row"><i class="fas fa-wallet"></i> Budget: $2,500 USD</div>
+                        <div class="tc-weather">
+                            <img src="https://cdn.weatherapi.com/weather/64x64/day/116.png" alt="Sunny">
+                            <span>22°C — Sunny</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h2>Everything You Need for Your Trip</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
+                    <h3>Trip Management</h3>
+                    <p>Add, edit, and organize all your trips in one dashboard. Never forget a trip again.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-cloud-sun"></i></div>
+                    <h3>Weather Forecasts</h3>
+                    <p>Check current weather conditions for your destination before you pack your bags.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-coins"></i></div>
+                    <h3>Budget Tracking</h3>
+                    <p>Set your trip budget and instantly convert currencies using live exchange rates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Secure & Private</h3>
+                    <p>Your data is protected with secure authentication. Only you can see your trips.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2>Ready to Start Planning?</h2>
+            <p>Create your free account in seconds and take control of your travel plans.</p>
+            <a href="/register" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus"></i> Create Free Account
+            </a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <p>&copy; 2025 Smart Travel Planner. Built with Node.js & Express.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
