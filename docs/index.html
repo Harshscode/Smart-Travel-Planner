@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Smart Travel Planner</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Smart Travel Planner</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="landing-body">
@@ -12,18 +12,19 @@
     <!-- ===== LANDING PAGE ===== -->
     <div class="landing-wrapper">
 
+        <!-- Navigation -->
+        <nav class="landing-nav">
+            <div class="nav-brand">
+                <i class="fas fa-plane-departure"></i> Smart Travel Planner
+            </div>
+            <div class="nav-links">
+                <a href="login.html" class="btn btn-outline">Log In</a>
+                <a href="register.html" class="btn btn-primary">Get Started</a>
+            </div>
+        </nav>
+
         <!-- Hero Section -->
         <section class="hero">
-            <nav class="landing-nav">
-                <div class="nav-brand">
-                    <i class="fas fa-plane-departure"></i> Smart Travel Planner
-                </div>
-                <div class="nav-links">
-                    <a href="/login" class="btn btn-outline">Log In</a>
-                    <a href="/register" class="btn btn-primary">Get Started</a>
-                </div>
-            </nav>
-
             <div class="hero-content">
                 <h1>Plan Your Next Adventure <span class="highlight">Smartly</span></h1>
                 <p>
@@ -31,10 +32,10 @@
                     and manage your travel budget with live exchange rates — all in one place.
                 </p>
                 <div class="hero-buttons">
-                    <a href="/register" class="btn btn-primary btn-lg">
+                    <a href="register.html" class="btn btn-primary btn-lg">
                         <i class="fas fa-rocket"></i> Start Planning Free
                     </a>
-                    <a href="/login" class="btn btn-outline btn-lg">
+                    <a href="login.html" class="btn btn-outline btn-lg">
                         <i class="fas fa-sign-in-alt"></i> I Have an Account
                     </a>
                 </div>
@@ -81,7 +82,7 @@
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
                     <h3>Secure & Private</h3>
-                    <p>Your data is protected with secure authentication. Only you can see your trips.</p>
+                    <p>Your data is stored locally on your device. Only you can access your trips.</p>
                 </div>
             </div>
         </section>
@@ -90,14 +91,14 @@
         <section class="cta-section">
             <h2>Ready to Start Planning?</h2>
             <p>Create your free account in seconds and take control of your travel plans.</p>
-            <a href="/register" class="btn btn-primary btn-lg">
+            <a href="register.html" class="btn btn-primary btn-lg">
                 <i class="fas fa-user-plus"></i> Create Free Account
             </a>
         </section>
 
         <!-- Footer -->
         <footer class="landing-footer">
-            <p>&copy; 2025 Smart Travel Planner. Built with Node.js & Express.</p>
+            <p>&copy; 2025 Smart Travel Planner. A static web app powered by JavaScript &amp; localStorage.</p>
         </footer>
     </div>
 

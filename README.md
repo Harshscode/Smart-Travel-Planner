@@ -1,168 +1,179 @@
-<<<<<<< HEAD
 # Smart Travel Planner
 
-A Node.js + Express web application for planning and managing your travel trips. Track destinations, check weather forecasts, and manage your travel budget with live exchange rates.
+A fully static, client-side web application for planning and managing your travel trips. Track destinations, check weather forecasts, and manage your travel budget with live exchange rates — all stored in your browser's localStorage.
+
+> **This is the Phase 1 static deployment version.** For the full Node.js/Express version, see the `server.js` branch.
 
 ## Features
 
-- **User Registration & Login** — Secure authentication with password hashing (bcryptjs)
+- **User Registration & Login** — Accounts stored in browser localStorage
 - **Dashboard** — View all your trips with stats (total, upcoming, past, budget)
 - **Add / Edit / Delete Trips** — Full CRUD operations for trip management
-- **Weather API** — Check current weather for any destination city
-- **Currency Converter** — Convert between 15+ currencies using live exchange rates
-- **Local Data Storage** — Users and trips stored in JSON files (Phase 1)
+- **Weather API** — Check current weather for any destination city (weatherapi.com)
+- **Currency Converter** — Convert between 15+ currencies using live exchange rates (exchangerate-api.com)
+- **localStorage Persistence** — All data stored in the browser (Phase 1)
 - **Responsive Design** — Works on desktop and mobile devices
-- **Session-Based Auth** — Secure login sessions with 24-hour expiry
+- **GitHub Pages Ready** — Fully static, deploys from the `docs/` folder
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Backend | Node.js, Express.js |
-| Templates | EJS |
-| Auth | bcryptjs, express-session |
-| Data | Local JSON files |
+| Structure | Static HTML files |
+| Styling | CSS3 (custom stylesheet, responsive) |
+| Logic | Vanilla JavaScript (ES6 modules) |
+| Storage | Browser localStorage |
 | APIs | weatherapi.com, exchangerate-api.com |
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Icons | Font Awesome 6 (CDN) |
 
 ## Project Structure
 
 ```
 smart-travel-planner/
-├── server.js              # Main Express app entry point
-├── package.json           # Dependencies and scripts
-├── .env                   # API keys and configuration (DO NOT COMMIT)
-├── .gitignore             # Ignores .env and node_modules
-├── controllers/
-│   ├── dataStore.js       # User & trip CRUD on JSON files
-│   ├── authController.js   # Register, login, logout logic
-│   ├── tripController.js   # Dashboard, add/edit/delete trips
-│   ├── weatherController.js # Weather API integration
-│   └── exchangeController.js # Currency API integration
-├── routes/
-│   ├── auth.js            # /login, /register, /logout routes
-│   ├── trips.js           # /dashboard, /add-trip, /edit-trip routes
-│   └── api.js             # /api/weather, /api/exchange AJAX endpoints
-├── views/
-│   ├── landing.ejs        # Landing page
-│   ├── login.ejs          # Login form
-│   ├── register.ejs       # Registration form
-│   ├── dashboard.ejs      # Main dashboard (trips + tools)
-│   ├── addTrip.ejs        # Add new trip form
-│   └── editTrip.ejs       # Edit trip form
-├── public/
+├── docs/                    # GitHub Pages deploy root
+│   ├── index.html           # Landing page
+│   ├── login.html           # Login form
+│   ├── register.html        # Registration form
+│   ├── dashboard.html       # Main dashboard (trips + tools)
+│   ├── add-trip.html        # Add new trip form
+│   ├── edit-trip.html       # Edit trip form
 │   ├── css/
-│   │   └── style.css      # All styles (responsive, modern UI)
+│   │   └── style.css        # All styles (~700 lines, responsive)
 │   └── js/
-│       └── dashboard.js   # Frontend JS (weather, conversion, modals)
-└── data/
-    ├── users.json         # User accounts (auto-created)
-    └── trips.json         # Trip records (auto-created)
+│       ├── storage.js       # localStorage read/write helpers
+│       ├── auth.js          # Register, login, logout logic
+│       ├── trips.js         # Trip CRUD (add, edit, delete)
+│       ├── api.js           # Weather & exchange rate fetch calls
+│       ├── ui.js            # DOM helpers, alerts, modals, HTML generators
+│       └── main.js          # Page init, auth guards, event wiring
+├── .env                     # API keys (for reference — not used in static app)
+├── .gitignore               # Ignores .env and node_modules
+└── README.md                # This file
 ```
 
-## Getting Started
+## Data Storage
 
-### 1. Install Dependencies
+All data is stored in browser localStorage using these keys:
 
+| Key | Data |
+|---|---|
+| `stp_users` | Array of user objects |
+| `stp_trips` | Array of trip objects |
+| `stp_currentUser` | Currently logged-in user |
+
+## Data Models
+
+```js
+// User object
+{
+    id: "1743460201234",        // Timestamp-based ID
+    name: "JohnDoe",            // Username
+    email: "john@example.com",   // Lowercase email
+    password: "password123",     // Stored as plain text (Phase 1)
+    createdAt: "2025-03-31T..." // ISO datetime
+}
+
+// Trip object
+{
+    id: "1743460205678",        // Timestamp-based ID
+    userId: "1743460201234",    // Owner's user ID
+    destination: "Paris, France",
+    startDate: "2025-07-01",
+    endDate: "2025-07-07",
+    budget: 2500,
+    currency: "USD",
+    notes: "Summer trip!",
+    createdAt: "2025-03-31T..."
+}
+```
+
+## Getting Started (Local)
+
+1. Open `docs/index.html` directly in your browser
+2. That's it — no server, no npm install needed!
+
+For a local server (recommended for development):
 ```bash
-npm install
+cd docs
+python3 -m http.server 8080
+# Then open http://localhost:8080
 ```
 
-### 2. Configure Environment Variables
+## Deploy to GitHub Pages
 
-Your `.env` file should already contain your API keys. Open it and verify:
-
-```env
-PORT=3000
-SESSION_SECRET=change_this_to_a_random_secret_string_in_production
-WEATHER_API_KEY=e5b14e5e327249128c1135910240105
-EXCHANGE_API_KEY=f781c5b5ecedaf552c7fa743
-```
-
-> **Important:** Never commit your `.env` file. It is already in `.gitignore`.
-
-### 3. Run the Server
-
-```bash
-npm start
-# or
-node server.js
-```
-
-Then open your browser and go to: **http://localhost:3000**
+1. **Push your code to GitHub** (the `docs/` folder must be included)
+2. Go to your repository **Settings** → **Pages**
+3. Under **Source**, select: **Deploy from a branch**
+4. Select branch: **`main`**, folder: **`/docs`**
+5. Click **Save**
+6. Wait 1-2 minutes — your site will be live at:
+   `https://YOUR-USERNAME.github.io/REPO-NAME/`
 
 ## API Keys
 
-The app uses two free APIs. Your keys are already configured in `.env`:
+Two free APIs are used. Keys are embedded directly in `docs/js/api.js`:
 
-| Service | API Key | Free Tier |
+| Service | Free Tier | Get a Key |
 |---|---|---|
-| Weather (weatherapi.com) | Already set | 1M calls/month |
-| Exchange Rate (exchangerate-api.com) | Already set | 1500 requests/month |
+| Weather (weatherapi.com) | 1M calls/month | https://www.weatherapi.com |
+| Exchange Rate (exchangerate-api.com) | 1500 requests/month | https://www.exchangerate-api.com |
 
-To get new keys:
-- Weather: https://www.weatherapi.com
-- Exchange Rate: https://www.exchangerate-api.com
+## JavaScript Modules
 
-## API Endpoints
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/weather?city=Paris` | GET | Get current weather for a city |
-| `/api/exchange?base=USD` | GET | Get exchange rates for a base currency |
-| `/api/convert?from=USD&to=EUR&amount=100` | GET | Convert amount between currencies |
-
-All API endpoints require authentication.
+| File | What It Does |
+|---|---|
+| `storage.js` | localStorage read/write for users, trips, and session |
+| `auth.js` | Register, login, logout + auth guards |
+| `trips.js` | Trip CRUD operations + stats calculation |
+| `api.js` | Weather and currency conversion fetch calls |
+| `ui.js` | Alert rendering, modal controls, HTML generators |
+| `main.js` | Per-page initialization and event handlers |
 
 ## How to Use
 
-1. **Register** — Create an account with username, email, and password
-2. **Login** — Use your email and password to access the dashboard
-3. **Add Trip** — Fill in destination, dates, budget, and optional notes
-4. **View Dashboard** — See all your trips sorted by upcoming/past
+1. **Register** — Create an account (stored in localStorage)
+2. **Login** — Use your email and password
+3. **Dashboard** — See all your trips sorted by upcoming/past
+4. **Add Trip** — Fill in destination, dates, budget, and notes
 5. **Check Weather** — Click "Weather" on any trip card or use the search tool
 6. **Convert Currency** — Use the converter to calculate budgets in different currencies
-7. **Edit or Delete** — Use the buttons on each trip card to modify or remove trips
+7. **Edit or Delete** — Use the buttons on each trip card
+8. **Logout** — Click the logout button to sign out
 
-## Deployment (Phase 1)
+## Protected Pages
 
-For simple deployment on platforms like Render, Railway, or Heroku:
+These pages automatically redirect to `login.html` if no user is logged in:
+- `dashboard.html`
+- `add-trip.html`
+- `edit-trip.html`
 
-1. Push to GitHub
-2. Connect the repository to your hosting platform
-3. Set environment variables in the platform's dashboard:
-   - `PORT` (optional, platform will set this)
-   - `SESSION_SECRET` — a random string for session signing
-   - `WEATHER_API_KEY` — your weather API key
-   - `EXCHANGE_API_KEY` — your exchange rate API key
-4. Set the build command: `npm install`
-5. Set the start command: `npm start`
+## Responsive Breakpoints
 
-**Note:** The JSON file data store is not suitable for production with multiple users or frequent writes. Phase 2 will replace this with MongoDB.
+| Breakpoint | Layout Changes |
+|---|---|
+| Desktop (>768px) | Full layout with sidebar stats |
+| Tablet/Mobile (≤768px) | Stacked stats, single-column trips, collapsed nav |
+| Small Mobile (≤480px) | Compact stat cards, full-width buttons |
 
 ## Phase 1 Checklist
 
 - [x] Landing page
 - [x] User registration
 - [x] User login
-- [x] Password hashing (bcryptjs)
-- [x] Session management
+- [x] localStorage session management
 - [x] Dashboard with trip list
 - [x] Add trip form
 - [x] Edit trip form
-- [x] Delete trip with confirmation
+- [x] Delete trip with confirmation modal
 - [x] Weather API integration
 - [x] Exchange rate API integration
 - [x] Currency converter tool
 - [x] Responsive navbar
 - [x] Responsive CSS design
-- [x] Local JSON data storage
+- [x] localStorage data persistence
+- [x] GitHub Pages deployment
 - [x] README and deployment instructions
 
 ## License
 
 MIT
-=======
-# Smart-Travel-Planner
-Smart Travel Planner
->>>>>>> a2484acf21dcda87451a7b6f565e08db636eb464
