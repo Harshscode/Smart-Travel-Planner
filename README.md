@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart Travel Planner
 
 A Node.js + Express web application for planning and managing your travel trips. Track destinations, check weather forecasts, and manage your travel budget with live exchange rates.
@@ -161,3 +162,7 @@ For simple deployment on platforms like Render, Railway, or Heroku:
 ## License
 
 MIT
+=======
+# Smart-Travel-Planner
+Smart Travel Planner
+>>>>>>> a2484acf21dcda87451a7b6f565e08db636eb464
