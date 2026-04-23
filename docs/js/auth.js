@@ -2,13 +2,14 @@
 // auth.js - Authentication Logic
 // ============================================================
 // Handles user registration, login, and logout.
+// Uses apiClient to communicate with the backend.
 // All functions are exposed as window.auth.*
 // ============================================================
 
 (function(window) {
     'use strict';
 
-    // --- Validation ---
+    // --- Validation (client-side, same as before) ---
 
     function validateRegistration(name, email, password, confirmPassword) {
         if (!name || !email || !password || !confirmPassword) {
@@ -37,7 +38,7 @@
         return null;
     }
 
-    // --- Auth Functions ---
+    // --- Auth Functions (async, using apiClient) ---
 
     function register(name, email, password, confirmPassword) {
         var validationError = validateRegistration(name, email, password, confirmPassword);
@@ -45,19 +46,10 @@
             return { success: false, error: validationError };
         }
 
-        if (window.storage.findUserByEmail(email)) {
-            return { success: false, error: 'An account with this email already exists.' };
-        }
-
-        if (window.storage.findUserByName(name)) {
-            return { success: false, error: 'This username is already taken.' };
-        }
-
-        var user = window.storage.addUser({ name: name, email: email, password: password });
-        window.storage.setCurrentUser(user);
-
-        console.log('New user registered: ' + user.name + ' (' + user.email + ')');
-        return { success: true, user: user };
+        // Call backend - apiClient.register handles the async call
+        // Since the HTML form uses synchronous-like pattern, we use a sync wrapper
+        // but register is actually async - the HTML handler will work with promises
+        return apiClient.register(name, email, password, confirmPassword);
     }
 
     function login(email, password) {
@@ -66,44 +58,29 @@
             return { success: false, error: validationError };
         }
 
-        var user = window.storage.findUserByEmail(email.trim().toLowerCase());
-        if (!user) {
-            return { success: false, error: 'No account found with this email.' };
-        }
-
-        if (user.password !== password) {
-            return { success: false, error: 'Incorrect password. Please try again.' };
-        }
-
-        // Remove password before storing session
-        var userWithoutPassword = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            createdAt: user.createdAt
-        };
-
-        window.storage.setCurrentUser(userWithoutPassword);
-        console.log('User logged in: ' + user.name);
-        return { success: true, user: userWithoutPassword };
+        return apiClient.login(email, password);
     }
 
     function logout() {
-        var currentUser = window.storage.getCurrentUser();
-        if (currentUser) {
-            console.log('User logged out: ' + currentUser.name);
-        }
-        window.storage.setCurrentUser(null);
+        return apiClient.logout().then(function(result) {
+            apiClient.clearCurrentUser();
+            return result;
+        });
     }
 
     function isLoggedIn() {
-        return window.storage.getCurrentUser() !== null;
+        return apiClient.isLoggedIn();
     }
 
     function requireAuth(redirectUrl) {
         redirectUrl = redirectUrl || 'login.html';
-        if (!isLoggedIn()) {
-            window.location.href = redirectUrl;
+        if (!apiClient.isLoggedIn()) {
+            // Try to restore session from server
+            apiClient.getCurrentUser().then(function(result) {
+                if (!result.success) {
+                    window.location.href = redirectUrl;
+                }
+            });
             return false;
         }
         return true;
@@ -111,15 +88,23 @@
 
     function redirectIfLoggedIn(redirectUrl) {
         redirectUrl = redirectUrl || 'dashboard.html';
-        if (isLoggedIn()) {
+        if (apiClient.isLoggedIn()) {
             window.location.href = redirectUrl;
             return true;
         }
+        // Async check
+        apiClient.getCurrentUser().then(function(result) {
+            if (result.success) {
+                window.location.href = redirectUrl;
+            }
+        });
         return false;
     }
 
     // --- Expose globally as window.auth ---
     window.auth = {
+        validateRegistration: validateRegistration,
+        validateLogin: validateLogin,
         register: register,
         login: login,
         logout: logout,

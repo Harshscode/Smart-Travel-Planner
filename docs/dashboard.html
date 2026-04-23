@@ -19,6 +19,9 @@
                 <a href="dashboard.html" class="nav-link active">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
+                <a href="favorites.html" class="nav-link">
+                    <i class="fas fa-heart"></i> Favorites
+                </a>
                 <a href="add-trip.html" class="nav-link">
                     <i class="fas fa-plus-circle"></i> Add Trip
                 </a>
@@ -27,6 +30,7 @@
                 <span class="user-welcome">
                     <i class="fas fa-user-circle"></i> <span id="userGreeting">User</span>
                 </span>
+                <button id="darkModeToggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
                 <a href="login.html" class="btn btn-outline btn-sm" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
@@ -147,10 +151,30 @@
         <!-- Trips List -->
         <div class="trips-section">
             <h2><i class="fas fa-map-marked-alt"></i> My Trips</h2>
+            <div class="trips-controls">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">All <span class="filter-count" id="countAll">0</span></button>
+                    <button class="filter-tab" data-filter="upcoming">Upcoming <span class="filter-count" id="countUpcoming">0</span></button>
+                    <button class="filter-tab" data-filter="past">Past <span class="filter-count" id="countPast">0</span></button>
+                </div>
+                <div class="sort-controls">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect">
+                        <option value="date-asc">Date (Earliest First)</option>
+                        <option value="date-desc">Date (Latest First)</option>
+                        <option value="budget-asc">Budget (Low to High)</option>
+                        <option value="budget-desc">Budget (High to Low)</option>
+                        <option value="destination-asc">Destination (A-Z)</option>
+                    </select>
+                </div>
+            </div>
             <div id="tripsContainer">
                 <!-- Trips are rendered here by JavaScript -->
             </div>
         </div>
+
+        <!-- Screen reader live region -->
+        <div id="liveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
     </main>
 
@@ -174,9 +198,10 @@
 
     <!-- JS Modules -->
     <script src="js/storage.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/trips.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 

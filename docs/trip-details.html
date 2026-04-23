@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details | Smart Travel Planner</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="trip-details-body">
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="dashboard.html" class="nav-brand">
+                <i class="fas fa-plane-departure"></i> Smart Travel Planner
+            </a>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="favorites.html" class="nav-link">
+                    <i class="fas fa-heart"></i> Favorites
+                </a>
+                <a href="add-trip.html" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Add Trip
+                </a>
+            </div>
+            <div class="nav-user">
+                <span class="user-welcome">
+                    <i class="fas fa-user-circle"></i> <span id="userGreeting">User</span>
+                </span>
+                <a href="login.html" class="btn btn-outline btn-sm" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <a href="dashboard.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h1 id="tripTitle">Trip Details</h1>
+                <p class="page-subtitle" id="tripSubtitle">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="pageAlert"></div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="overview">
+                <i class="fas fa-info-circle"></i> Overview
+            </button>
+            <button class="tab-btn" data-tab="itinerary">
+                <i class="fas fa-calendar-alt"></i> Itinerary
+            </button>
+            <button class="tab-btn" data-tab="budget">
+                <i class="fas fa-wallet"></i> Budget
+            </button>
+        </div>
+
+        <!-- ===== OVERVIEW TAB ===== -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="trip-overview-card">
+
+                <!-- VIEW MODE -->
+                <div id="overviewView">
+                    <div class="trip-overview-header">
+                        <div>
+                            <h2 id="overviewDestination"><i class="fas fa-map-marker-alt"></i> Destination</h2>
+                            <p class="trip-dates" id="overviewDates"></p>
+                        </div>
+                        <div class="trip-status-badge" id="overviewStatus"></div>
+                    </div>
+                    <div class="trip-overview-details">
+                        <div class="overview-detail-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span class="detail-label">Duration</span>
+                                <span class="detail-value" id="overviewDuration"></span>
+                            </div>
+                        </div>
+                        <div class="overview-detail-item">
+                            <i class="fas fa-wallet"></i>
+                            <div>
+                                <span class="detail-label">Budget</span>
+                                <span class="detail-value" id="overviewBudget"></span>
+                            </div>
+                        </div>
+                        <div class="overview-detail-item">
+                            <i class="fas fa-sticky-note"></i>
+                            <div>
+                                <span class="detail-label">Notes</span>
+                                <span class="detail-value" id="overviewNotes">No notes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-overview-actions">
+                        <button class="btn btn-secondary" id="editOverviewBtn">
+                            <i class="fas fa-edit"></i> Edit Trip
+                        </button>
+                        <button class="btn btn-danger" id="deleteTripBtn">
+                            <i class="fas fa-trash"></i> Delete Trip
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EDIT MODE -->
+                <div id="overviewEdit" class="hidden">
+                    <form id="overviewEditForm">
+                        <div class="form-group">
+                            <label for="editDestination"><i class="fas fa-map-marker-alt"></i> Destination</label>
+                            <input type="text" id="editDestination" class="form-input" placeholder="e.g. Paris, France" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editStartDate"><i class="fas fa-calendar-check"></i> Start Date</label>
+                                <input type="date" id="editStartDate" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEndDate"><i class="fas fa-calendar-times"></i> End Date</label>
+                                <input type="date" id="editEndDate" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editBudget"><i class="fas fa-coins"></i> Budget</label>
+                                <input type="number" id="editBudget" class="form-input" step="0.01" min="0" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="editCurrency"><i class="fas fa-money-bill-wave"></i> Currency</label>
+                                <select id="editCurrency" class="form-input">
+                                    <option value="USD">USD — US Dollar</option>
+                                    <option value="EUR">EUR — Euro</option>
+                                    <option value="GBP">GBP — British Pound</option>
+                                    <option value="JPY">JPY — Japanese Yen</option>
+                                    <option value="CAD">CAD — Canadian Dollar</option>
+                                    <option value="AUD">AUD — Australian Dollar</option>
+                                    <option value="CHF">CHF — Swiss Franc</option>
+                                    <option value="CNY">CNY — Chinese Yuan</option>
+                                    <option value="INR">INR — Indian Rupee</option>
+                                    <option value="MXN">MXN — Mexican Peso</option>
+                                    <option value="BRL">BRL — Brazilian Real</option>
+                                    <option value="KRW">KRW — Korean Won</option>
+                                    <option value="SGD">SGD — Singapore Dollar</option>
+                                    <option value="THB">THB — Thai Baht</option>
+                                    <option value="ZAR">ZAR — South African Rand</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editNotes"><i class="fas fa-sticky-note"></i> Notes</label>
+                            <textarea id="editNotes" class="form-input" rows="3" placeholder="Any additional notes..."></textarea>
+                        </div>
+                        <div class="overview-edit-actions">
+                            <button type="submit" class="btn btn-primary" id="saveOverviewBtn">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button type="button" class="btn btn-outline" id="cancelEditOverviewBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Weather Card -->
+            <div class="trip-weather-card" id="tripWeatherCard">
+                <h3><i class="fas fa-cloud-sun"></i> Current Weather</h3>
+                <div class="weather-search-inline">
+                    <input type="text" id="detailWeatherCity" placeholder="Check weather..." class="form-input">
+                    <button class="btn btn-primary btn-sm" onclick="checkWeatherDetail()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="detailWeatherResult"></div>
+            </div>
+        </div>
+
+        <!-- ===== ITINERARY TAB ===== -->
+        <div id="tab-itinerary" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-alt"></i> Daily Activities</h2>
+                <div style="display:flex;gap:0.5rem;">
+                    <button class="btn btn-secondary" id="shareItineraryBtn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                    <button class="btn btn-primary" id="showAddItineraryBtn">
+                        <i class="fas fa-plus"></i> Add Activity
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add/Edit Itinerary Form -->
+            <div class="form-card hidden" id="itineraryFormCard">
+                <h3 id="itineraryFormTitle">Add Activity</h3>
+                <form id="itineraryForm">
+                    <input type="hidden" id="itineraryItemId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itinDate">Date *</label>
+                            <input type="date" id="itinDate" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itinTime">Time</label>
+                            <input type="time" id="itinTime" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="itinActivity">Activity *</label>
+                        <input type="text" id="itinActivity" class="form-input" placeholder="e.g. Visit Eiffel Tower" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itinLocation">Location</label>
+                        <input type="text" id="itinLocation" class="form-input" placeholder="e.g. Champ de Mars, Paris">
+                    </div>
+                    <div class="form-group">
+                        <label for="itinCategory">Category</label>
+                        <select id="itinCategory" class="form-input">
+                            <option value="sightseeing">Sightseeing</option>
+                            <option value="food">Food & Dining</option>
+                            <option value="transport">Transport</option>
+                            <option value="lodging">Lodging</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itinNotes">Notes</label>
+                        <textarea id="itinNotes" class="form-input" rows="2" placeholder="Additional details..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Activity
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="cancelItineraryForm()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Alert -->
+            <div id="itineraryAlert"></div>
+
+            <!-- Itinerary List -->
+            <div id="itineraryList">
+                <div class="empty-state-inline">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No activities planned yet. Click "Add Activity" to start planning!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== BUDGET TAB ===== -->
+        <div id="tab-budget" class="tab-content">
+            <!-- Budget Summary -->
+            <div class="budget-summary-card">
+                <div class="budget-summary-header">
+                    <h2><i class="fas fa-wallet"></i> Budget Overview</h2>
+                    <div class="budget-numbers">
+                        <span class="budget-spent" id="budgetSpent">$0</span>
+                        <span class="budget-separator">/</span>
+                        <span class="budget-total" id="budgetTotal">$0</span>
+                    </div>
+                </div>
+                <div class="budget-bar-container">
+                    <div class="budget-bar" id="budgetBar">
+                        <div class="budget-progress" id="budgetProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="budget-percentage" id="budgetPercentage">0% used</div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="category-breakdown" id="categoryBreakdown">
+                <h3>Spending by Category</h3>
+                <div id="categoryList"></div>
+            </div>
+
+            <!-- Section header with Add button -->
+            <div class="section-header" style="margin-top:1.5rem; margin-bottom:0.75rem;">
+                <h3><i class="fas fa-list"></i> Expense Log</h3>
+                <button class="btn btn-primary btn-sm" onclick="showAddExpenseForm()">
+                    <i class="fas fa-plus"></i> Add Expense
+                </button>
+            </div>
+
+            <!-- Alert -->
+            <div id="expenseAlert"></div>
+
+            <!-- Expense List -->
+            <div class="expense-list" id="expenseList">
+                <div class="empty-state-inline">
+                    <i class="fas fa-receipt"></i>
+                    <p>No expenses recorded yet. Add your first expense above!</p>
+                </div>
+            </div>
+
+            <!-- Add/Edit Expense Form -->
+            <div class="form-card hidden" id="expenseFormCard" style="margin-top:1.5rem;">
+                <h3 id="expenseFormTitle">Add Expense</h3>
+                <form id="expenseForm">
+                    <input type="hidden" id="expenseItemId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseAmount">Amount *</label>
+                            <input type="number" id="expenseAmount" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseCurrency">Currency</label>
+                            <select id="expenseCurrency" class="form-input">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                                <option value="CHF">CHF</option>
+                                <option value="CNY">CNY</option>
+                                <option value="INR">INR</option>
+                                <option value="MXN">MXN</option>
+                                <option value="BRL">BRL</option>
+                                <option value="KRW">KRW</option>
+                                <option value="SGD">SGD</option>
+                                <option value="HKD">HKD</option>
+                                <option value="THB">THB</option>
+                                <option value="ZAR">ZAR</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" class="form-input">
+                                <option value="food">Food & Dining</option>
+                                <option value="transport">Transport</option>
+                                <option value="lodging">Lodging</option>
+                                <option value="activities">Activities</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseDate">Date *</label>
+                            <input type="date" id="expenseDate" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDescription">Description *</label>
+                        <input type="text" id="expenseDescription" class="form-input" placeholder="e.g. Dinner at La Boqueria" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> <span id="expenseSaveLabel">Save Expense</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="cancelExpenseForm()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Delete Trip</h3>
+            <p id="deleteModalText">Are you sure you want to delete this trip? This will also delete all itinerary and expense data.</p>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Modules -->
+    <script src="js/storage.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/trips.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/itinerary.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Trip Details page initialization
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Auth check
+            var sessionResult = await window.apiClient.getCurrentUser();
+            if (!sessionResult.success) {
+                window.location.href = 'login.html';
+                return;
+            }
+            window.apiClient.setCurrentUser(sessionResult.user);
+            document.getElementById('userGreeting').textContent = sessionResult.user.name;
+
+            // Wire logout
+            var logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.auth.logout();
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // Get trip ID
+            var urlParams = new URLSearchParams(window.location.search);
+            var tripId = urlParams.get('id');
+            if (!tripId) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Load trip data
+            var tripResult = await window.apiClient.getTripById(tripId);
+            if (!tripResult.success || !tripResult.trip) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            var trip = tripResult.trip;
+
+            // Store trip globally for share access
+            window.currentTrip = trip;
+
+            // Populate overview
+            document.getElementById('tripTitle').textContent = trip.destination;
+            document.getElementById('tripSubtitle').textContent = 'Trip to ' + trip.destination;
+
+            var formatDate = function(d) {
+                if (!d) return '';
+                var date = new Date(d);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            };
+
+            function populateViewMode() {
+                document.getElementById('overviewDestination').innerHTML =
+                    '<i class="fas fa-map-marker-alt"></i> ' + window.ui.escapeHtml(trip.destination);
+                document.getElementById('overviewDates').textContent =
+                    formatDate(trip.startDate) + ' — ' + formatDate(trip.endDate);
+
+                var duration = window.trips.getTripDuration(trip.startDate, trip.endDate);
+                document.getElementById('overviewDuration').textContent = duration + ' day' + (duration !== 1 ? 's' : '');
+                document.getElementById('overviewBudget').textContent = trip.currency + ' ' + parseFloat(trip.budget || 0).toLocaleString();
+                document.getElementById('overviewNotes').textContent = trip.notes || 'No notes';
+                document.getElementById('detailWeatherCity').value = trip.destination;
+
+                var isPast = window.trips.isPast(trip.endDate);
+                var statusEl = document.getElementById('overviewStatus');
+                if (isPast) {
+                    statusEl.className = 'trip-status status-past';
+                    statusEl.textContent = 'Past';
+                } else {
+                    statusEl.className = 'trip-status status-upcoming';
+                    statusEl.textContent = 'Upcoming';
+                }
+            }
+
+            populateViewMode();
+
+            // Inline edit overview
+            var editOverviewBtn = document.getElementById('editOverviewBtn');
+            var cancelEditBtn = document.getElementById('cancelEditOverviewBtn');
+            var saveOverviewBtn = document.getElementById('saveOverviewBtn');
+            var overviewView = document.getElementById('overviewView');
+            var overviewEdit = document.getElementById('overviewEdit');
+            var overviewEditForm = document.getElementById('overviewEditForm');
+
+            function showEditMode() {
+                // Pre-fill form with current values
+                document.getElementById('editDestination').value = trip.destination;
+                document.getElementById('editStartDate').value = trip.startDate ? trip.startDate.split('T')[0] : '';
+                document.getElementById('editEndDate').value = trip.endDate ? trip.endDate.split('T')[0] : '';
+                document.getElementById('editBudget').value = trip.budget || '';
+                document.getElementById('editCurrency').value = trip.currency || 'USD';
+                document.getElementById('editNotes').value = trip.notes || '';
+                overviewView.classList.add('hidden');
+                overviewEdit.classList.remove('hidden');
+                document.getElementById('editDestination').focus();
+            }
+
+            function hideEditMode() {
+                overviewEdit.classList.add('hidden');
+                overviewView.classList.remove('hidden');
+            }
+
+            editOverviewBtn.addEventListener('click', showEditMode);
+            cancelEditBtn.addEventListener('click', hideEditMode);
+
+            overviewEditForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                saveOverviewBtn.disabled = true;
+                saveOverviewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                var updateData = {
+                    destination: document.getElementById('editDestination').value.trim(),
+                    startDate: document.getElementById('editStartDate').value,
+                    endDate: document.getElementById('editEndDate').value,
+                    budget: parseFloat(document.getElementById('editBudget').value) || 0,
+                    currency: document.getElementById('editCurrency').value,
+                    notes: document.getElementById('editNotes').value
+                };
+
+                if (!updateData.destination) {
+                    alert('Destination is required');
+                    saveOverviewBtn.disabled = false;
+                    saveOverviewBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+                    return;
+                }
+
+                var result = await window.apiClient.updateTrip(trip.id, updateData);
+                if (result.success && result.trip) {
+                    trip = result.trip;
+                    window.currentTrip = trip;
+                    populateViewMode();
+                    hideEditMode();
+                } else {
+                    document.getElementById('pageAlert').innerHTML =
+                        '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Failed to save') + '</div>';
+                }
+                saveOverviewBtn.disabled = false;
+                saveOverviewBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+            });
+
+            // Delete trip
+            var deleteBtn = document.getElementById('deleteTripBtn');
+            deleteBtn.onclick = function() {
+                var modal = document.getElementById('deleteModal');
+                modal.classList.remove('hidden');
+            };
+
+            var confirmBtn = document.getElementById('confirmDeleteBtn');
+            confirmBtn.onclick = async function() {
+                var result = await window.apiClient.deleteTrip(trip.id);
+                if (result.success) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('pageAlert').innerHTML =
+                        '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + result.error + '</div>';
+                }
+            };
+
+            // Tab navigation
+            var tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+                    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+                    this.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+
+                    // Load tab content
+                    if (tabId === 'itinerary') {
+                        window.itinerary.loadItinerary(trip.id);
+                    } else if (tabId === 'budget') {
+                        window.expenses.loadExpenses(trip.id, trip.budget, trip.currency);
+                    }
+                });
+            });
+
+            // Share itinerary button
+            var shareBtn = document.getElementById('shareItineraryBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', async function() {
+                    var result = await window.apiClient.getItinerary(trip.id);
+                    if (result.success && result.items && result.items.length > 0) {
+                        var text = window.itinerary.generateShareText(trip, result.items);
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(text).then(function() {
+                                var orig = shareBtn.innerHTML;
+                                shareBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                                shareBtn.classList.add('copied');
+                                setTimeout(function() {
+                                    shareBtn.innerHTML = orig;
+                                    shareBtn.classList.remove('copied');
+                                }, 2000);
+                            }).catch(function() {
+                                // Fallback
+                                var ta = document.createElement('textarea');
+                                ta.value = text;
+                                document.body.appendChild(ta);
+                                ta.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(ta);
+                                var orig = shareBtn.innerHTML;
+                                shareBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                                shareBtn.classList.add('copied');
+                                setTimeout(function() {
+                                    shareBtn.innerHTML = orig;
+                                    shareBtn.classList.remove('copied');
+                                }, 2000);
+                            });
+                        }
+                    } else {
+                        document.getElementById('itineraryAlert').innerHTML =
+                            '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> No activities to share yet. Add some activities first!</div>';
+                    }
+                });
+            }
+
+            // Itinerary form
+            document.getElementById('showAddItineraryBtn').addEventListener('click', function() {
+                document.getElementById('itineraryFormCard').classList.remove('hidden');
+                document.getElementById('itineraryItemId').value = '';
+                document.getElementById('itineraryForm').reset();
+                document.getElementById('itineraryFormTitle').textContent = 'Add Activity';
+                // Set default date to trip start
+                var startDate = trip.startDate ? new Date(trip.startDate).toISOString().split('T')[0] : '';
+                document.getElementById('itinDate').value = startDate;
+            });
+
+            document.getElementById('itineraryForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var itemId = document.getElementById('itineraryItemId').value;
+                var itemData = {
+                    date: document.getElementById('itinDate').value,
+                    time: document.getElementById('itinTime').value,
+                    activity: document.getElementById('itinActivity').value,
+                    location: document.getElementById('itinLocation').value,
+                    category: document.getElementById('itinCategory').value,
+                    notes: document.getElementById('itinNotes').value
+                };
+
+                var result;
+                if (itemId) {
+                    result = await window.apiClient.updateItineraryItem(itemId, itemData);
+                } else {
+                    result = await window.apiClient.addItineraryItem(trip.id, itemData);
+                }
+
+                if (result.success) {
+                    cancelItineraryForm();
+                    window.itinerary.loadItinerary(trip.id);
+                } else {
+                    document.getElementById('itineraryAlert').innerHTML =
+                        '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + result.error + '</div>';
+                }
+            });
+
+            // Expense form
+            document.getElementById('expenseForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var expenseId = document.getElementById('expenseItemId').value;
+                var expenseData = {
+                    amount: document.getElementById('expenseAmount').value,
+                    currency: document.getElementById('expenseCurrency').value,
+                    category: document.getElementById('expenseCategory').value,
+                    description: document.getElementById('expenseDescription').value,
+                    date: document.getElementById('expenseDate').value
+                };
+
+                var submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                var result;
+                if (expenseId) {
+                    result = await window.apiClient.updateExpense(expenseId, expenseData);
+                } else {
+                    result = await window.apiClient.addExpense(trip.id, expenseData);
+                }
+
+                if (result.success) {
+                    cancelExpenseForm();
+                    window.expenses.loadExpenses(trip.id, trip.budget, trip.currency);
+                } else {
+                    document.getElementById('expenseAlert').innerHTML =
+                        '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Failed to save expense') + '</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> <span id="expenseSaveLabel">Save Expense</span>';
+                }
+            });
+
+            // Close modal on outside click
+            document.addEventListener('click', function(e) {
+                var modal = document.getElementById('deleteModal');
+                if (modal && e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // Load weather by default
+            checkWeatherDetail();
+        });
+
+        async function checkWeatherDetail() {
+            var city = document.getElementById('detailWeatherCity').value.trim();
+            var resultDiv = document.getElementById('detailWeatherResult');
+            if (!city || !resultDiv) return;
+
+            resultDiv.innerHTML = '<div class="tool-loading"><i class="fas fa-spinner fa-spin"></i> Checking weather...</div>';
+
+            var result = await window.api.checkWeather(city);
+            if (!result.success) {
+                resultDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + result.error + '</div>';
+            } else {
+                resultDiv.innerHTML = window.ui.renderWeatherResult(result.data);
+            }
+        }
+
+        function cancelItineraryForm() {
+            document.getElementById('itineraryFormCard').classList.add('hidden');
+            document.getElementById('itineraryItemId').value = '';
+            document.getElementById('itineraryForm').reset();
+            document.getElementById('itineraryAlert').innerHTML = '';
+        }
+
+        function cancelExpenseForm() {
+            document.getElementById('expenseFormCard').classList.add('hidden');
+            document.getElementById('expenseItemId').value = '';
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseAlert').innerHTML = '';
+            document.getElementById('expenseFormTitle').textContent = 'Add Expense';
+            var saveLabel = document.getElementById('expenseSaveLabel');
+            if (saveLabel) saveLabel.textContent = 'Save Expense';
+            var submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> <span id="expenseSaveLabel">Save Expense</span>';
+            }
+        }
+
+        function showAddExpenseForm() {
+            document.getElementById('expenseFormCard').classList.remove('hidden');
+            document.getElementById('expenseItemId').value = '';
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseFormTitle').textContent = 'Add Expense';
+            document.getElementById('expenseAlert').innerHTML = '';
+            document.getElementById('expenseCurrency').value = trip.currency || 'USD';
+            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            var saveLabel = document.getElementById('expenseSaveLabel');
+            if (saveLabel) saveLabel.textContent = 'Save Expense';
+            var submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> <span id="expenseSaveLabel">Save Expense</span>';
+            }
+            document.getElementById('expenseFormCard').scrollIntoView({ behavior: 'smooth', block: 'top' });
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+    </script>
+
+</body>
+</html>

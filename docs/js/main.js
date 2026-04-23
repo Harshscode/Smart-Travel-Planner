@@ -1,9 +1,7 @@
 // ============================================================
 // main.js - Page Initialization & Event Handlers
 // ============================================================
-// This file initializes each page, wires up event listeners,
-// and calls the appropriate functions from storage.js, auth.js,
-// trips.js, api.js, and ui.js.
+// Updated for Phase 2 to use apiClient instead of localStorage.
 // ============================================================
 
 // ============================================================
@@ -12,12 +10,9 @@
 // so they must be global (not wrapped in an object).
 // ============================================================
 
-/**
- * Check weather for a city from the search input field.
- */
 async function checkWeather() {
-    const city = document.getElementById('weatherCity')?.value.trim();
-    const resultDiv = document.getElementById('weatherResult');
+    var city = document.getElementById('weatherCity') && document.getElementById('weatherCity').value.trim();
+    var resultDiv = document.getElementById('weatherResult');
     if (!resultDiv) return;
 
     if (!city) {
@@ -25,11 +20,12 @@ async function checkWeather() {
         return;
     }
 
-    resultDiv.innerHTML = ui.renderLoading(`Checking weather for ${city}...`);
+    resultDiv.innerHTML = ui.renderLoading('Checking weather for ' + city + '...');
     resultDiv.classList.remove('hidden');
-    document.getElementById('weatherAlert')?.remove();
+    var oldAlert = document.getElementById('weatherAlert');
+    if (oldAlert) oldAlert.remove();
 
-    const result = await api.checkWeather(city);
+    var result = await window.api.checkWeather(city);
 
     if (!result.success) {
         resultDiv.innerHTML = '';
@@ -40,21 +36,18 @@ async function checkWeather() {
     resultDiv.innerHTML = ui.renderWeatherResult(result.data);
 }
 
-/**
- * Check weather for a trip destination (called from trip card button).
- * @param {string} destination - The trip destination
- */
 async function checkWeatherForTrip(destination) {
-    const resultDiv = document.getElementById('weatherResult');
-    const input = document.getElementById('weatherCity');
+    var resultDiv = document.getElementById('weatherResult');
+    var input = document.getElementById('weatherCity');
     if (!resultDiv) return;
 
     if (input) input.value = destination;
-    resultDiv.innerHTML = ui.renderLoading(`Checking weather for ${destination}...`);
+    resultDiv.innerHTML = ui.renderLoading('Checking weather for ' + destination + '...');
     resultDiv.classList.remove('hidden');
-    document.getElementById('weatherAlert')?.remove();
+    var oldAlert = document.getElementById('weatherAlert');
+    if (oldAlert) oldAlert.remove();
 
-    const result = await api.checkWeather(destination);
+    var result = await window.api.checkWeather(destination);
 
     if (!result.success) {
         resultDiv.innerHTML = '';
@@ -63,20 +56,17 @@ async function checkWeatherForTrip(destination) {
     }
 
     resultDiv.innerHTML = ui.renderWeatherResult(result.data);
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (resultDiv.scrollIntoView) resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-/**
- * Convert currency between two selected currencies.
- */
 async function convertCurrency() {
-    const amount = document.getElementById('convertAmount')?.value;
-    const from = document.getElementById('convertFrom')?.value;
-    const to = document.getElementById('convertTo')?.value;
-    const resultDiv = document.getElementById('conversionResult');
+    var amount = document.getElementById('convertAmount') && document.getElementById('convertAmount').value;
+    var from = document.getElementById('convertFrom') && document.getElementById('convertFrom').value;
+    var to = document.getElementById('convertTo') && document.getElementById('convertTo').value;
+    var resultDiv = document.getElementById('conversionResult');
     if (!resultDiv) return;
 
-    const numAmount = parseFloat(amount);
+    var numAmount = parseFloat(amount);
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
         ui.showAlert('conversionAlert', 'Please enter a valid amount greater than 0.', 'error');
         return;
@@ -84,9 +74,10 @@ async function convertCurrency() {
 
     resultDiv.innerHTML = ui.renderLoading('Converting...');
     resultDiv.classList.remove('hidden');
-    document.getElementById('conversionAlert')?.remove();
+    var oldAlert = document.getElementById('conversionAlert');
+    if (oldAlert) oldAlert.remove();
 
-    const result = await api.convertCurrency(from, to, amount);
+    var result = await window.api.convertCurrency(from, to, amount);
 
     if (!result.success) {
         resultDiv.innerHTML = '';
@@ -101,48 +92,47 @@ async function convertCurrency() {
 // DELETE MODAL
 // ============================================================
 
-/**
- * Show the delete confirmation modal.
- * @param {string} tripId - The trip ID to delete
- * @param {string} destination - The trip destination for display
- */
+var allTrips = [];
+
 function confirmDelete(tripId, destination) {
-    const modal = document.getElementById('deleteModal');
-    const text = document.getElementById('deleteModalText');
-    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    var modal = document.getElementById('deleteModal');
+    var text = document.getElementById('deleteModalText');
+    var confirmBtn = document.getElementById('confirmDeleteBtn');
 
     if (!modal || !text || !confirmBtn) return;
 
-    text.textContent = `Are you sure you want to delete your trip to "${destination}"? This action cannot be undone.`;
+    text.textContent = 'Are you sure you want to delete your trip to "' + destination + '"? This action cannot be undone.';
     confirmBtn.href = '#';
-    confirmBtn.onclick = () => handleDelete(tripId);
+    confirmBtn.onclick = function() { handleDelete(tripId); };
     modal.classList.remove('hidden');
 }
 
-/**
- * Handle the actual delete action after confirmation.
- * @param {string} tripId - The trip ID
- */
-function handleDelete(tripId) {
-    const result = trips.deleteTrip(tripId);
+async function handleDelete(tripId) {
+    var confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    var result = await window.trips.deleteTrip(tripId);
     if (result.success) {
         ui.hideModal('deleteModal');
-        loadTrips(); // Reload the trips list
+        loadTrips();
     } else {
         ui.showAlert('deleteAlert', result.error, 'error');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
+        }
     }
 }
 
-/**
- * Close the delete modal.
- */
 function closeDeleteModal() {
     ui.hideModal('deleteModal');
 }
 
-// Close modal when clicking outside
 document.addEventListener('click', function(e) {
-    const modal = document.getElementById('deleteModal');
+    var modal = document.getElementById('deleteModal');
     if (modal && e.target === modal) {
         closeDeleteModal();
     }
@@ -152,41 +142,93 @@ document.addEventListener('click', function(e) {
 // DASHBOARD PAGE
 // ============================================================
 
-/**
- * Load and display all trips for the current user.
- */
-function loadTrips() {
-    const tripsContainer = document.getElementById('tripsContainer');
+async function loadTrips() {
+    var tripsContainer = document.getElementById('tripsContainer');
     if (!tripsContainer) return;
 
-    const myTrips = trips.getMyTrips();
-    const stats = trips.calculateStats(myTrips);
+    // Show skeleton loading
+    tripsContainer.innerHTML = ui.renderSkeletonTripCards(3);
 
-    ui.updateStats(stats);
+    var result = await window.trips.getMyTrips();
 
-    if (myTrips.length === 0) {
-        tripsContainer.innerHTML = ui.renderEmptyState();
+    if (!result.success) {
+        tripsContainer.innerHTML = ui.renderErrorState(result.error || 'Failed to load trips.');
         return;
     }
 
-    tripsContainer.innerHTML = myTrips.map(trip => ui.renderTripCard(trip)).join('');
+    allTrips = result.trips || [];
+    var stats = window.trips.calculateStats(allTrips);
+    ui.updateStats(stats);
+
+    // Update filter count badges
+    var total = allTrips.length;
+    var upcoming = stats.upcomingTrips;
+    var past = stats.pastTrips;
+    var countAllEl = document.getElementById('countAll');
+    var countUpcomingEl = document.getElementById('countUpcoming');
+    var countPastEl = document.getElementById('countPast');
+    if (countAllEl) countAllEl.textContent = total;
+    if (countUpcomingEl) countUpcomingEl.textContent = upcoming;
+    if (countPastEl) countPastEl.textContent = past;
+
+    // Apply current filter and sort
+    var activeFilter = document.querySelector('.filter-tab.active');
+    var filter = activeFilter ? activeFilter.dataset.filter : 'all';
+    var sortSelect = document.getElementById('sortSelect');
+    var sortKey = sortSelect ? sortSelect.value : 'date-asc';
+
+    filterAndRenderTrips(filter, sortKey);
 }
 
-/**
- * Initialize the dashboard page.
- */
-function initDashboard() {
-    // Auth guard: must be logged in
-    if (!auth.requireAuth()) return;
+function filterAndRenderTrips(filter, sortKey) {
+    var tripsContainer = document.getElementById('tripsContainer');
+    if (!tripsContainer) return;
+
+    var filtered = allTrips.filter(function(trip) {
+        if (filter === 'upcoming') return window.trips.isUpcoming(trip.startDate);
+        if (filter === 'past') return window.trips.isPast(trip.endDate);
+        return true;
+    });
+
+    var sorted = window.trips.sortTrips(filtered, sortKey);
+
+    if (sorted.length === 0) {
+        tripsContainer.innerHTML = filter === 'all'
+            ? ui.renderEmptyState()
+            : '<div class="empty-state">' +
+              '<div class="empty-icon"><i class="fas fa-filter"></i></div>' +
+              '<h3>No ' + filter + ' trips</h3>' +
+              '<p>You don\'t have any ' + filter + ' trips at the moment.</p>' +
+              '</div>';
+        return;
+    }
+
+    tripsContainer.innerHTML = sorted.map(function(trip) { return ui.renderTripCard(trip); }).join('');
+
+    // Announce to screen readers
+    var liveRegion = document.getElementById('liveRegion');
+    if (liveRegion) liveRegion.textContent = sorted.length + ' ' + filter + ' trips displayed.';
+}
+
+async function initDashboard() {
+    // Check session with backend
+    var sessionResult = await window.apiClient.getCurrentUser();
+
+    if (!sessionResult.success) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Set user in apiClient cache
+    window.apiClient.setCurrentUser(sessionResult.user);
 
     // Set user greeting
-    const user = storage.getCurrentUser();
-    if (user) {
-        ui.setUserGreeting(user.name);
+    if (sessionResult.user) {
+        ui.setUserGreeting(sessionResult.user.name);
     }
 
     // Wire up keyboard shortcuts
-    const weatherInput = document.getElementById('weatherCity');
+    var weatherInput = document.getElementById('weatherCity');
     if (weatherInput) {
         weatherInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -196,7 +238,7 @@ function initDashboard() {
         });
     }
 
-    const amountInput = document.getElementById('convertAmount');
+    var amountInput = document.getElementById('convertAmount');
     if (amountInput) {
         amountInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -207,31 +249,67 @@ function initDashboard() {
     }
 
     // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            auth.logout();
-            window.location.href = 'login.html';
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            window.auth.logout().then(function() {
+                window.location.href = 'login.html';
+            });
         });
+    }
+
+    // Wire up dark mode toggle
+    var darkToggle = document.getElementById('darkModeToggle');
+    if (darkToggle) {
+        darkToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            var isDark = document.body.classList.contains('dark-mode');
+            darkToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+        // Sync icon if dark mode is already active
+        if (document.body.classList.contains('dark-mode')) {
+            darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
     }
 
     // Load data
     loadTrips();
+
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var sortSelect = document.getElementById('sortSelect');
+            filterAndRenderTrips(tab.dataset.filter, sortSelect ? sortSelect.value : 'date-asc');
+        });
+    });
+
+    // Sort dropdown
+    var sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            var activeTab = document.querySelector('.filter-tab.active');
+            filterAndRenderTrips(activeTab ? activeTab.dataset.filter : 'all', sortSelect.value);
+        });
+    }
 }
 
 // ============================================================
 // REGISTER PAGE
 // ============================================================
 
-/**
- * Initialize the register page.
- */
-function initRegister() {
-    // Redirect if already logged in
-    if (auth.redirectIfLoggedIn()) return;
+async function initRegister() {
+    // Check if already logged in
+    var sessionResult = await window.apiClient.getCurrentUser();
+    if (sessionResult.success) {
+        window.location.href = 'dashboard.html';
+        return;
+    }
 
-    const form = document.getElementById('registerForm');
+    var form = document.getElementById('registerForm');
     if (!form) return;
 
     // Password visibility toggles
@@ -241,20 +319,31 @@ function initRegister() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const name = document.getElementById('username')?.value || '';
-        const email = document.getElementById('email')?.value || '';
-        const password = document.getElementById('password')?.value || '';
-        const confirmPassword = document.getElementById('confirmPassword')?.value || '';
+        var name = (document.getElementById('username') && document.getElementById('username').value) || '';
+        var email = (document.getElementById('email') && document.getElementById('email').value) || '';
+        var password = (document.getElementById('password') && document.getElementById('password').value) || '';
+        var confirmPassword = (document.getElementById('confirmPassword') && document.getElementById('confirmPassword').value) || '';
 
-        const result = auth.register(name, email, password, confirmPassword);
-
-        if (!result.success) {
-            ui.showAlert('formAlert', result.error, 'error');
+        var validationError = window.auth.validateRegistration(name, email, password, confirmPassword);
+        if (validationError) {
+            ui.showAlert('formAlert', validationError, 'error');
             return;
         }
 
-        // Success — redirect to dashboard
-        window.location.href = 'dashboard.html';
+        var submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+        window.apiClient.register(name, email, password, confirmPassword).then(function(result) {
+            if (!result.success) {
+                ui.showAlert('formAlert', result.error, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                return;
+            }
+            // Success — redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
     });
 }
 
@@ -262,14 +351,15 @@ function initRegister() {
 // LOGIN PAGE
 // ============================================================
 
-/**
- * Initialize the login page.
- */
-function initLogin() {
-    // Redirect if already logged in
-    if (auth.redirectIfLoggedIn()) return;
+async function initLogin() {
+    // Check if already logged in
+    var sessionResult = await window.apiClient.getCurrentUser();
+    if (sessionResult.success) {
+        window.location.href = 'dashboard.html';
+        return;
+    }
 
-    const form = document.getElementById('loginForm');
+    var form = document.getElementById('loginForm');
     if (!form) return;
 
     // Password visibility toggle
@@ -278,55 +368,304 @@ function initLogin() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const email = document.getElementById('email')?.value || '';
-        const password = document.getElementById('password')?.value || '';
+        var email = (document.getElementById('email') && document.getElementById('email').value) || '';
+        var password = (document.getElementById('password') && document.getElementById('password').value) || '';
 
-        const result = auth.login(email, password);
-
-        if (!result.success) {
-            ui.showAlert('formAlert', result.error, 'error');
+        var validationError = window.auth.validateLogin(email, password);
+        if (validationError) {
+            ui.showAlert('formAlert', validationError, 'error');
             return;
         }
 
-        // Success — redirect to dashboard
-        window.location.href = 'dashboard.html';
+        var submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
+        window.apiClient.login(email, password).then(function(result) {
+            if (!result.success) {
+                ui.showAlert('formAlert', result.error, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log In';
+                return;
+            }
+            // Success — redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
     });
 }
 
 // ============================================================
-// ADD TRIP PAGE
+// ADD TRIP PAGE (with inline itinerary planning)
 // ============================================================
 
-/**
- * Initialize the add trip page.
- */
-function initAddTrip() {
-    // Auth guard
-    if (!auth.requireAuth()) return;
+var planningItems = [];
 
-    // Set minimum dates
-    setupDateInputs();
+function renderPlanningDays() {
+    var container = document.getElementById('planningDays');
+    if (!container) return;
 
-    const form = document.getElementById('tripForm');
-    if (!form) return;
+    var startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
+    var endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
 
-    // Wire up logout
-    wireLogoutButton();
+    if (!startDate || !endDate) {
+        container.innerHTML = '<div class="planning-day-empty" style="padding:1rem;text-align:center;color:#9ca3af;font-size:0.9rem;">' +
+            '<i class="fas fa-info-circle"></i> Enter start and end dates above to start planning your itinerary.</div>';
+        return;
+    }
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+    var start = new Date(startDate + 'T00:00:00');
+    var end = new Date(endDate + 'T00:00:00');
+    var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-        const tripData = getTripFormData();
+    if (days < 1 || days > 60) {
+        container.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Invalid date range</div>';
+        return;
+    }
 
-        const result = trips.addTrip(tripData);
+    container.innerHTML = '';
+    for (var i = 0; i < days; i++) {
+        var dayDate = new Date(start);
+        dayDate.setDate(start.getDate() + i);
+        var dateStr = dayDate.toISOString().split('T')[0];
+        var dayLabel = formatDateForDisplay(dateStr);
+        var dayItems = planningItems.filter(function(it) { return it.date === dateStr; });
 
-        if (!result.success) {
-            ui.showAlert('formAlert', result.error, 'error');
-            return;
+        var dayEl = document.createElement('div');
+        dayEl.className = 'planning-day';
+        dayEl.dataset.date = dateStr;
+
+        var itemsHtml = '';
+        if (dayItems.length === 0) {
+            itemsHtml = '<div class="planning-day-empty">No activities yet</div>';
+        } else {
+            dayItems.forEach(function(item) {
+                var timeStr = item.time ? item.time.substring(0, 5) : '';
+                var timeDisplay = timeStr ? formatTime12(timeStr) : '';
+                var removeIdx = planningItems.indexOf(item);
+                itemsHtml += '<div class="planning-item-mini">' +
+                    '<span class="mini-time">' + timeDisplay + '</span>' +
+                    '<span class="mini-activity">' + escapeHtml(item.activity) + '</span>' +
+                    (item.location ? '<span class="mini-loc">\uD83D\uDCCD ' + escapeHtml(item.location) + '</span>' : '') +
+                    '<button type="button" class="mini-remove" data-idx="' + removeIdx + '">\u2715</button>' +
+                    '</div>';
+            });
         }
 
-        // Success — redirect to dashboard
-        window.location.href = 'dashboard.html';
+        dayEl.innerHTML =
+            '<div class="planning-day-header">' +
+            '<span class="day-date-label">Day ' + (i + 1) + ' \u2014 ' + dayLabel + '</span>' +
+            '<span class="day-item-count">' + dayItems.length + ' activit' + (dayItems.length !== 1 ? 'ies' : 'y') + '</span>' +
+            '</div>' +
+            '<div class="planning-day-items">' + itemsHtml + '</div>' +
+            '<div class="planning-day-footer">' +
+            '<button type="button" class="btn btn-xs btn-secondary add-mini-activity-btn">' +
+            '<i class="fas fa-plus"></i> Add Activity</button>' +
+            '</div>' +
+            '<div class="mini-form hidden" style="display:none;">' +
+            '<input type="text" class="mini-activity-input" placeholder="Activity name *" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">' +
+            '<div class="mini-form-row">' +
+            '<input type="time" class="mini-time-input" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;">' +
+            '<input type="text" class="mini-location-input" placeholder="Location" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;">' +
+            '</div>' +
+            '<select class="mini-category-input" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">' +
+            '<option value="sightseeing">Sightseeing</option>' +
+            '<option value="food">Food & Dining</option>' +
+            '<option value="transport">Transport</option>' +
+            '<option value="lodging">Lodging</option>' +
+            '<option value="other">Other</option>' +
+            '</select>' +
+            '<input type="text" class="mini-notes-input" placeholder="Notes (optional)" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">' +
+            '<div class="mini-form-actions">' +
+            '<button type="button" class="btn btn-xs btn-outline cancel-mini-form-btn">Cancel</button>' +
+            '<button type="button" class="btn btn-xs btn-primary save-mini-form-btn"><i class="fas fa-check"></i> Add</button>' +
+            '</div>' +
+            '</div>';
+
+        container.appendChild(dayEl);
+    }
+
+    // Wire up event listeners
+    container.querySelectorAll('.add-mini-activity-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var dayEl = btn.closest('.planning-day');
+            var miniForm = dayEl.querySelector('.mini-form');
+            miniForm.classList.remove('hidden');
+            miniForm.style.display = 'flex';
+            miniForm.style.flexDirection = 'column';
+            miniForm.style.gap = '0.5rem';
+            miniForm.querySelector('.mini-activity-input').value = '';
+            miniForm.querySelector('.mini-time-input').value = '';
+            miniForm.querySelector('.mini-location-input').value = '';
+            miniForm.querySelector('.mini-notes-input').value = '';
+            miniForm.querySelector('.mini-activity-input').focus();
+            btn.classList.add('hidden');
+        });
+    });
+
+    container.querySelectorAll('.cancel-mini-form-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var dayEl = btn.closest('.planning-day');
+            var miniForm = dayEl.querySelector('.mini-form');
+            miniForm.classList.add('hidden');
+            miniForm.style.display = 'none';
+            dayEl.querySelector('.add-mini-activity-btn').classList.remove('hidden');
+        });
+    });
+
+    container.querySelectorAll('.save-mini-form-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var dayEl = btn.closest('.planning-day');
+            var miniForm = dayEl.querySelector('.mini-form');
+            var activity = miniForm.querySelector('.mini-activity-input').value.trim();
+            if (!activity) {
+                miniForm.querySelector('.mini-activity-input').focus();
+                return;
+            }
+            var dateStr = dayEl.dataset.date;
+            planningItems.push({
+                date: dateStr,
+                time: miniForm.querySelector('.mini-time-input').value,
+                activity: activity,
+                location: miniForm.querySelector('.mini-location-input').value.trim(),
+                category: miniForm.querySelector('.mini-category-input').value,
+                notes: miniForm.querySelector('.mini-notes-input').value.trim()
+            });
+            miniForm.classList.add('hidden');
+            miniForm.style.display = 'none';
+            dayEl.querySelector('.add-mini-activity-btn').classList.remove('hidden');
+            renderPlanningDays();
+        });
+    });
+
+    container.querySelectorAll('.mini-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var idx = parseInt(btn.dataset.idx, 10);
+            planningItems.splice(idx, 1);
+            renderPlanningDays();
+        });
+    });
+}
+
+function formatDateForDisplay(dateStr) {
+    if (!dateStr) return '';
+    try {
+        var d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    } catch (e) { return dateStr; }
+}
+
+function formatTime12(timeStr) {
+    if (!timeStr) return '';
+    try {
+        var parts = timeStr.split(':');
+        var hours = parseInt(parts[0], 10);
+        var minutes = parts[1] || '00';
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return hours + ':' + minutes + ' ' + ampm;
+    } catch (e) { return timeStr; }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function setupDateInputsForPlanning() {
+    var startInput = document.getElementById('startDate');
+    var endInput = document.getElementById('endDate');
+    var today = new Date().toISOString().split('T')[0];
+
+    if (startInput) {
+        startInput.min = today;
+        startInput.addEventListener('change', function() {
+            if (endInput) endInput.min = startInput.value;
+            renderPlanningDays();
+        });
+    }
+    if (endInput) {
+        endInput.min = today;
+        endInput.addEventListener('change', function() {
+            renderPlanningDays();
+        });
+    }
+}
+
+async function initAddTrip() {
+    var sessionResult = await window.apiClient.getCurrentUser();
+    if (!sessionResult.success) {
+        window.location.href = 'login.html';
+        return;
+    }
+    window.apiClient.setCurrentUser(sessionResult.user);
+    document.getElementById('userGreeting').textContent = sessionResult.user.name;
+
+    var logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            window.auth.logout().then(function() {
+                window.location.href = 'login.html';
+            });
+        });
+    }
+
+    // Setup date inputs and planning section
+    setupDateInputsForPlanning();
+    renderPlanningDays();
+
+    var form = document.getElementById('tripForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        var dest = (document.getElementById('destination') && document.getElementById('destination').value) || ''.trim();
+        var sDate = (document.getElementById('startDate') && document.getElementById('startDate').value) || '';
+        var eDate = (document.getElementById('endDate') && document.getElementById('endDate').value) || '';
+        var budget = (document.getElementById('budget') && document.getElementById('budget').value) || '';
+        var currency = (document.getElementById('currency') && document.getElementById('currency').value) || 'USD';
+        var notes = (document.getElementById('notes') && document.getElementById('notes').value) || '';
+
+        if (!dest) { ui.showAlert('formAlert', 'Destination is required', 'error'); return; }
+        if (!sDate || !eDate) { ui.showAlert('formAlert', 'Both dates are required', 'error'); return; }
+        if (new Date(eDate) < new Date(sDate)) { ui.showAlert('formAlert', 'End date must be same or after start date', 'error'); return; }
+
+        var saveBtn = document.getElementById('saveTripBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        var tripData = {
+            destination: dest,
+            startDate: sDate,
+            endDate: eDate,
+            budget: parseFloat(budget) || 0,
+            currency: currency,
+            notes: notes,
+            _isNew: true
+        };
+
+        var result;
+        if (planningItems.length > 0) {
+            result = await window.apiClient.createTripWithItinerary(tripData, planningItems);
+        } else {
+            result = await window.apiClient.createTrip(tripData);
+        }
+
+        if (result.success && result.trip) {
+            var tripId = result.trip._id || result.trip.id;
+            window.location.href = 'trip-details.html?id=' + tripId;
+        } else {
+            var alertEl = document.getElementById('formAlert');
+            if (alertEl) {
+                alertEl.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Failed to create trip') + '</div>';
+            }
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Trip';
+        }
     });
 }
 
@@ -334,12 +673,14 @@ function initAddTrip() {
 // EDIT TRIP PAGE
 // ============================================================
 
-/**
- * Initialize the edit trip page.
- */
-function initEditTrip() {
-    // Auth guard
-    if (!auth.requireAuth()) return;
+async function initEditTrip() {
+    // Auth check
+    var sessionResult = await window.apiClient.getCurrentUser();
+    if (!sessionResult.success) {
+        window.location.href = 'login.html';
+        return;
+    }
+    window.apiClient.setCurrentUser(sessionResult.user);
 
     // Set minimum dates
     setupDateInputs();
@@ -348,8 +689,8 @@ function initEditTrip() {
     wireLogoutButton();
 
     // Get trip ID from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const tripId = urlParams.get('id');
+    var urlParams = new URLSearchParams(window.location.search);
+    var tripId = urlParams.get('id');
 
     if (!tripId) {
         window.location.href = 'dashboard.html';
@@ -357,53 +698,65 @@ function initEditTrip() {
     }
 
     // Load the trip
-    const trip = storage.getTripById(tripId);
-    const user = storage.getCurrentUser();
+    var tripResult = await window.apiClient.getTripById(tripId);
 
-    // Verify trip exists and belongs to current user
-    if (!trip || trip.userId !== user?.id) {
+    if (!tripResult.success || !tripResult.trip) {
         window.location.href = 'dashboard.html';
         return;
     }
 
-    // Fill in the form with existing data
-    const destInput = document.getElementById('destination');
-    const startInput = document.getElementById('startDate');
-    const endInput = document.getElementById('endDate');
-    const budgetInput = document.getElementById('budget');
-    const currencySelect = document.getElementById('currency');
-    const notesInput = document.getElementById('notes');
-    const headingDest = document.getElementById('headingDestination');
+    var trip = tripResult.trip;
 
-    if (destInput) destInput.value = trip.destination;
-    if (startInput) startInput.value = trip.startDate;
-    if (endInput) endInput.value = trip.endDate;
-    if (budgetInput) budgetInput.value = trip.budget;
-    if (currencySelect) currencySelect.value = trip.currency;
+    // Format dates for input fields
+    var formatDate = function(date) {
+        if (!date) return '';
+        var d = new Date(date);
+        return d.toISOString().split('T')[0];
+    };
+
+    // Fill in the form with existing data
+    var destInput = document.getElementById('destination');
+    var startInput = document.getElementById('startDate');
+    var endInput = document.getElementById('endDate');
+    var budgetInput = document.getElementById('budget');
+    var currencySelect = document.getElementById('currency');
+    var notesInput = document.getElementById('notes');
+    var headingDest = document.getElementById('headingDestination');
+
+    if (destInput) destInput.value = trip.destination || '';
+    if (startInput) startInput.value = formatDate(trip.startDate);
+    if (endInput) endInput.value = formatDate(trip.endDate);
+    if (budgetInput) budgetInput.value = trip.budget || 0;
+    if (currencySelect) currencySelect.value = trip.currency || 'USD';
     if (notesInput) notesInput.value = trip.notes || '';
-    if (headingDest) headingDest.textContent = trip.destination;
+    if (headingDest) headingDest.textContent = trip.destination || '';
 
     // Set minimum end date based on start date
     if (startInput && endInput) {
         endInput.setAttribute('min', startInput.value);
     }
 
-    const form = document.getElementById('tripForm');
+    var form = document.getElementById('tripForm');
     if (!form) return;
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const updateData = getTripFormData();
-        const result = trips.updateTrip(tripId, updateData);
-
-        if (!result.success) {
-            ui.showAlert('formAlert', result.error, 'error');
+        var updateData = getTripFormData();
+        var validationError = window.trips.validateTrip(updateData);
+        if (validationError) {
+            ui.showAlert('formAlert', validationError, 'error');
             return;
         }
 
-        // Success — redirect to dashboard
-        window.location.href = 'dashboard.html';
+        window.apiClient.updateTrip(tripId, updateData).then(function(result) {
+            if (!result.success) {
+                ui.showAlert('formAlert', result.error, 'error');
+                return;
+            }
+            // Success — redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
     });
 }
 
@@ -411,28 +764,21 @@ function initEditTrip() {
 // SHARED HELPERS
 // ============================================================
 
-/**
- * Get trip form data as an object.
- * @returns {Object} Trip form data
- */
 function getTripFormData() {
     return {
-        destination: document.getElementById('destination')?.value || '',
-        startDate: document.getElementById('startDate')?.value || '',
-        endDate: document.getElementById('endDate')?.value || '',
-        budget: document.getElementById('budget')?.value || '0',
-        currency: document.getElementById('currency')?.value || 'USD',
-        notes: document.getElementById('notes')?.value || ''
+        destination: (document.getElementById('destination') && document.getElementById('destination').value) || '',
+        startDate: (document.getElementById('startDate') && document.getElementById('startDate').value) || '',
+        endDate: (document.getElementById('endDate') && document.getElementById('endDate').value) || '',
+        budget: (document.getElementById('budget') && document.getElementById('budget').value) || '0',
+        currency: (document.getElementById('currency') && document.getElementById('currency').value) || 'USD',
+        notes: (document.getElementById('notes') && document.getElementById('notes').value) || ''
     };
 }
 
-/**
- * Set up minimum date on date inputs (can't select past dates).
- */
 function setupDateInputs() {
-    const today = new Date().toISOString().split('T')[0];
-    const startInput = document.getElementById('startDate');
-    const endInput = document.getElementById('endDate');
+    var today = new Date().toISOString().split('T')[0];
+    var startInput = document.getElementById('startDate');
+    var endInput = document.getElementById('endDate');
 
     if (startInput) {
         startInput.setAttribute('min', today);
@@ -444,30 +790,24 @@ function setupDateInputs() {
     }
 }
 
-/**
- * Wire up the logout button on protected pages.
- */
 function wireLogoutButton() {
-    const logoutBtn = document.getElementById('logoutBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            auth.logout();
-            window.location.href = 'login.html';
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            window.auth.logout().then(function() {
+                window.location.href = 'login.html';
+            });
         });
     }
 }
 
-/**
- * Toggle password visibility.
- * @param {string} inputId - The input element ID
- * @param {string} iconId - The icon element ID inside the toggle button
- */
 function setupPasswordToggle(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    const wrapper = input?.parentElement;
-    const btn = wrapper?.querySelector('.toggle-password');
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    var wrapper = input && input.parentElement;
+    var btn = wrapper && wrapper.querySelector('.toggle-password');
 
     if (!input || !btn) return;
 
@@ -485,12 +825,9 @@ function setupPasswordToggle(inputId, iconId) {
 // ============================================================
 // PAGE INITIALIZATION
 // ============================================================
-// Detect which page we're on and call the appropriate init.
-// This uses the body class or a specific element to identify the page.
-// ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    const body = document.body;
+    var body = document.body;
 
     if (body.classList.contains('dashboard-body')) {
         initDashboard();
@@ -503,5 +840,4 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (body.classList.contains('edit-trip-body')) {
         initEditTrip();
     }
-    // Landing page (index.html) needs no JS initialization
 });

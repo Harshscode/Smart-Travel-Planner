@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites | Smart Travel Planner</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="favorites-body">
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="dashboard.html" class="nav-brand">
+                <i class="fas fa-plane-departure"></i> Smart Travel Planner
+            </a>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="favorites.html" class="nav-link active">
+                    <i class="fas fa-heart"></i> Favorites
+                </a>
+                <a href="add-trip.html" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Add Trip
+                </a>
+            </div>
+            <div class="nav-user">
+                <span class="user-welcome">
+                    <i class="fas fa-user-circle"></i> <span id="userGreeting">User</span>
+                </span>
+                <a href="login.html" class="btn btn-outline btn-sm" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-heart"></i> Favorite Places</h1>
+                <p class="page-subtitle">Destinations you want to visit someday.</p>
+            </div>
+            <button class="btn btn-primary" id="showAddFavoriteBtn">
+                <i class="fas fa-plus"></i> Add Favorite
+            </button>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="pageAlert"></div>
+
+        <!-- Add/Edit Favorite Form -->
+        <div class="form-card hidden" id="favoriteFormCard">
+            <h3 id="favoriteFormTitle">Add Favorite Place</h3>
+            <form id="favoriteForm">
+                <input type="hidden" id="favoriteItemId">
+                <div class="form-group">
+                    <label for="favoriteDestination">Destination *</label>
+                    <input type="text" id="favoriteDestination" class="form-input" placeholder="e.g. Kyoto, Japan" required>
+                </div>
+                <div class="form-group">
+                    <label for="favoriteNotes">Notes</label>
+                    <textarea id="favoriteNotes" class="form-input" rows="3" placeholder="Why do you want to visit? Any special attractions?"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="cancelFavoriteForm()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Favorites List -->
+        <div id="favoritesList">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-heart"></i></div>
+                <h3>No favorites yet</h3>
+                <p>Start adding places you'd love to visit someday!</p>
+                <button class="btn btn-primary" onclick="document.getElementById('showAddFavoriteBtn').click()">
+                    <i class="fas fa-plus"></i> Add Your First Favorite
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JS Modules -->
+    <script src="js/storage.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Auth check
+            var sessionResult = await window.apiClient.getCurrentUser();
+            if (!sessionResult.success) {
+                window.location.href = 'login.html';
+                return;
+            }
+            window.apiClient.setCurrentUser(sessionResult.user);
+            document.getElementById('userGreeting').textContent = sessionResult.user.name;
+
+            // Wire logout
+            var logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+                    window.auth.logout().then(function() {
+                        window.location.href = 'login.html';
+                    });
+                });
+            }
+
+            // Load favorites
+            window.favorites.loadFavorites();
+
+            // Show add form
+            document.getElementById('showAddFavoriteBtn').addEventListener('click', function() {
+                document.getElementById('favoriteFormCard').classList.remove('hidden');
+                document.getElementById('favoriteItemId').value = '';
+                document.getElementById('favoriteForm').reset();
+                document.getElementById('favoriteFormTitle').textContent = 'Add Favorite Place';
+            });
+
+            // Form submit
+            document.getElementById('favoriteForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var itemId = document.getElementById('favoriteItemId').value;
+                var data = {
+                    destination: document.getElementById('favoriteDestination').value,
+                    notes: document.getElementById('favoriteNotes').value
+                };
+
+                var submitBtn = document.querySelector('#favoriteForm button[type="submit"]');
+
+                if (itemId) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    var result = await window.apiClient.updateFavorite(itemId, data);
+                    if (result.success) {
+                        cancelFavoriteForm();
+                        window.favorites.loadFavorites();
+                    } else {
+                        document.getElementById('pageAlert').innerHTML =
+                            '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Failed to update favorite') + '</div>';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+                    }
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    var result = await window.apiClient.addFavorite(data);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+                    if (result.success) {
+                        cancelFavoriteForm();
+                        window.favorites.loadFavorites();
+                    } else {
+                        document.getElementById('pageAlert').innerHTML =
+                            '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Failed to add favorite') + '</div>';
+                    }
+                }
+            });
+        });
+
+        function cancelFavoriteForm() {
+            document.getElementById('favoriteFormCard').classList.add('hidden');
+            document.getElementById('favoriteForm').reset();
+            document.getElementById('favoriteItemId').value = '';
+            document.getElementById('favoriteFormTitle').textContent = 'Add Favorite Place';
+            document.getElementById('pageAlert').innerHTML = '';
+        }
+    </script>
+
+</body>
+</html>

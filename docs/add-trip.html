@@ -134,10 +134,56 @@
                     ></textarea>
                 </div>
 
+                <!-- Itinerary Planning Section -->
+                <div class="itinerary-planning-section" id="itineraryPlanningSection">
+                    <h3><i class="fas fa-calendar-alt"></i> Plan Your Itinerary <span class="optional">(optional — can skip)</span></h3>
+                    <p class="section-hint">You can plan day-by-day activities here, or add them later from the Trip Details page.</p>
+
+                    <div id="planningDays">
+                        <div class="planning-day-empty" style="padding:1rem;text-align:center;color:#9ca3af;font-size:0.9rem;">
+                            <i class="fas fa-info-circle"></i> Enter start and end dates above to start planning your itinerary.
+                        </div>
+                    </div>
+
+                    <div id="planningDayTemplate" style="display:none;">
+                        <div class="planning-day" data-date="">
+                            <div class="planning-day-header">
+                                <span class="day-date-label"></span>
+                                <span class="day-item-count"></span>
+                            </div>
+                            <div class="planning-day-items"></div>
+                            <div class="planning-day-footer">
+                                <button type="button" class="btn btn-xs btn-secondary add-mini-activity-btn">
+                                    <i class="fas fa-plus"></i> Add Activity
+                                </button>
+                            </div>
+                            <div class="mini-form hidden" style="display:none;">
+                                <input type="text" class="mini-activity-input" placeholder="Activity (e.g. Eiffel Tower Visit)" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">
+                                <div class="mini-form-row">
+                                    <input type="time" class="mini-time-input" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;">
+                                    <input type="text" class="mini-location-input" placeholder="Location" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;">
+                                </div>
+                                <select class="mini-category-input" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">
+                                    <option value="sightseeing">Sightseeing</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="lodging">Lodging</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <input type="text" class="mini-notes-input" placeholder="Notes (optional)" style="padding:0.4rem;border:1px solid var(--border);border-radius:0.3rem;width:100%;">
+                                <div class="mini-form-actions">
+                                    <button type="button" class="btn btn-xs btn-outline cancel-mini-form-btn">Cancel</button>
+                                    <button type="button" class="btn btn-xs btn-primary save-mini-form-btn"><i class="fas fa-check"></i> Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit -->
                 <div class="form-actions">
                     <a href="dashboard.html" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="saveTripBtn">
                         <i class="fas fa-save"></i> Save Trip
                     </button>
                 </div>
@@ -149,8 +195,9 @@
 
     <!-- JS Modules -->
     <script src="js/storage.js"></script>
-    <script src="js/trips.js"></script>
+    <script src="js/api-client.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/trips.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 

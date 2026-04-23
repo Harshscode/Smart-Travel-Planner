@@ -17,7 +17,7 @@
             <div class="nav-brand">
                 <i class="fas fa-plane-departure"></i> Smart Travel Planner
             </div>
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="login.html" class="btn btn-outline">Log In</a>
                 <a href="register.html" class="btn btn-primary">Get Started</a>
             </div>
@@ -70,19 +70,29 @@
                     <p>Add, edit, and organize all your trips in one dashboard. Never forget a trip again.</p>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3>Itinerary Planner</h3>
+                    <p>Plan daily activities with dates, times, locations, and categories for every trip.</p>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-cloud-sun"></i></div>
                     <h3>Weather Forecasts</h3>
                     <p>Check current weather conditions for your destination before you pack your bags.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-coins"></i></div>
-                    <h3>Budget Tracking</h3>
-                    <p>Set your trip budget and instantly convert currencies using live exchange rates.</p>
+                    <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+                    <h3>Budget Tracker</h3>
+                    <p>Track every expense by category, see running totals, and stay on budget.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h3>Secure & Private</h3>
-                    <p>Your data is stored locally on your device. Only you can access your trips.</p>
+                    <div class="feature-icon"><i class="fas fa-coins"></i></div>
+                    <h3>Currency Converter</h3>
+                    <p>Instantly convert between 16 currencies using live exchange rates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-heart"></i></div>
+                    <h3>Favorite Places</h3>
+                    <p>Save destinations you dream of visiting and plan trips from your wish list.</p>
                 </div>
             </div>
         </section>
@@ -98,9 +108,23 @@
 
         <!-- Footer -->
         <footer class="landing-footer">
-            <p>&copy; 2025 Smart Travel Planner. A static web app powered by JavaScript &amp; localStorage.</p>
+            <p>&copy; 2025 Smart Travel Planner. Built with Node.js, Express &amp; MongoDB.</p>
         </footer>
     </div>
+
+    <!-- JS -->
+    <script src="js/storage.js"></script>
+    <script src="js/api-client.js"></script>
+    <script>
+        // Check if user is logged in and update nav
+        (async function() {
+            var result = await window.apiClient.getCurrentUser();
+            if (result.success) {
+                document.getElementById('navLinks').innerHTML =
+                    '<a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>';
+            }
+        })();
+    </script>
 
 </body>
 </html>

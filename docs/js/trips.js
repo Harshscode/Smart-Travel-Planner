@@ -1,6 +1,7 @@
 // ============================================================
 // trips.js - Trip Management Logic
 // ============================================================
+// Uses apiClient for data access. Pure utility functions are kept.
 // All functions are exposed as window.trips.*
 // ============================================================
 
@@ -8,6 +9,8 @@
     'use strict';
 
     // --- Validation ---
+    var TODAY = new Date();
+    TODAY.setHours(0, 0, 0, 0);
 
     function validateTrip(data) {
         if (!data.destination || data.destination.trim() === '') {
@@ -22,13 +25,72 @@
         if (new Date(data.endDate) < new Date(data.startDate)) {
             return 'End date must be the same as or after the start date.';
         }
+        var start = new Date(data.startDate);
+        start.setHours(0, 0, 0, 0);
+        if (data._isNew && start < TODAY) {
+            return 'Start date cannot be in the past.';
+        }
+        if (data.budget !== undefined && data.budget !== '' && parseFloat(data.budget) <= 0) {
+            return 'Budget must be a positive number.';
+        }
         return null;
     }
 
-    // --- Trip CRUD ---
+    // --- Sorting ---
+    function sortTripsByDate(trips, direction) {
+        var sorted = trips.slice().sort(function(a, b) {
+            return new Date(a.startDate) - new Date(b.startDate);
+        });
+        if (direction === 'desc') sorted.reverse();
+        return sorted;
+    }
+
+    function sortTripsByBudget(trips, direction) {
+        var sorted = trips.slice().sort(function(a, b) {
+            return (parseFloat(a.budget) || 0) - (parseFloat(b.budget) || 0);
+        });
+        if (direction === 'desc') sorted.reverse();
+        return sorted;
+    }
+
+    function sortTripsByDestination(trips, direction) {
+        var sorted = trips.slice().sort(function(a, b) {
+            return a.destination.localeCompare(b.destination);
+        });
+        if (direction === 'desc') sorted.reverse();
+        return sorted;
+    }
+
+    function sortTrips(trips, sortKey) {
+        switch (sortKey) {
+            case 'date-asc': return sortTripsByDate(trips, 'asc');
+            case 'date-desc': return sortTripsByDate(trips, 'desc');
+            case 'budget-asc': return sortTripsByBudget(trips, 'asc');
+            case 'budget-desc': return sortTripsByBudget(trips, 'desc');
+            case 'destination-asc': return sortTripsByDestination(trips, 'asc');
+            default: return sortTripsByDate(trips, 'asc');
+        }
+    }
+
+    // --- Relative Date ---
+    function getRelativeDate(startDate) {
+        var start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        var now = new Date();
+        now.setHours(0, 0, 0, 0);
+        var diffDays = Math.round((start - now) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Tomorrow';
+        if (diffDays === -1) return 'Yesterday';
+        if (diffDays > 1) return 'In ' + diffDays + ' days';
+        return diffDays * -1 + ' days ago';
+    }
+
+    // --- Trip CRUD (async via apiClient) ---
 
     function addTrip(tripData) {
-        var user = window.storage.getCurrentUser();
+        var user = apiClient.getCurrentUserSync();
         if (!user) {
             return { success: false, error: 'You must be logged in to add a trip.' };
         }
@@ -38,23 +100,14 @@
             return { success: false, error: validationError };
         }
 
-        var trip = window.storage.addTrip(tripData, user.id);
-        console.log('Trip added: ' + trip.destination + ' by ' + user.name);
-        return { success: true, trip: trip };
+        tripData._isNew = true;
+        return apiClient.createTrip(tripData);
     }
 
     function updateTrip(tripId, updateData) {
-        var user = window.storage.getCurrentUser();
+        var user = apiClient.getCurrentUserSync();
         if (!user) {
             return { success: false, error: 'You must be logged in.' };
-        }
-
-        var existingTrip = window.storage.getTripById(tripId);
-        if (!existingTrip) {
-            return { success: false, error: 'Trip not found.' };
-        }
-        if (existingTrip.userId !== user.id) {
-            return { success: false, error: 'You can only edit your own trips.' };
         }
 
         var validationError = validateTrip(updateData);
@@ -62,48 +115,30 @@
             return { success: false, error: validationError };
         }
 
-        var updatedTrip = window.storage.updateTrip(tripId, updateData);
-        if (!updatedTrip) {
-            return { success: false, error: 'Trip not found.' };
-        }
-
-        console.log('Trip updated: ' + updatedTrip.destination);
-        return { success: true, trip: updatedTrip };
+        return apiClient.updateTrip(tripId, updateData);
     }
 
     function deleteTrip(tripId) {
-        var user = window.storage.getCurrentUser();
+        var user = apiClient.getCurrentUserSync();
         if (!user) {
             return { success: false, error: 'You must be logged in.' };
         }
 
-        var existingTrip = window.storage.getTripById(tripId);
-        if (!existingTrip) {
-            return { success: false, error: 'Trip not found.' };
-        }
-        if (existingTrip.userId !== user.id) {
-            return { success: false, error: 'You can only delete your own trips.' };
-        }
-
-        var deleted = window.storage.deleteTrip(tripId);
-        if (deleted) {
-            console.log('Trip deleted: ' + tripId);
-            return { success: true };
-        }
-        return { success: false, error: 'Failed to delete trip.' };
+        return apiClient.deleteTrip(tripId);
     }
 
-    // --- Queries ---
+    // --- Queries (async via apiClient) ---
 
     function getMyTrips() {
-        var user = window.storage.getCurrentUser();
-        if (!user) return [];
-        return window.storage.getUserTrips(user.id);
+        // This returns a promise - callers need to handle async
+        return apiClient.getTrips();
     }
 
     function getTripById(tripId) {
-        return window.storage.getTripById(tripId);
+        return apiClient.getTripById(tripId);
     }
+
+    // --- Pure Utility Functions (no data access - keep as-is) ---
 
     function calculateStats(trips) {
         var now = new Date();
@@ -153,6 +188,7 @@
 
     // --- Expose globally as window.trips ---
     window.trips = {
+        validateTrip: validateTrip,
         addTrip: addTrip,
         updateTrip: updateTrip,
         deleteTrip: deleteTrip,
@@ -161,7 +197,9 @@
         calculateStats: calculateStats,
         getTripDuration: getTripDuration,
         isUpcoming: isUpcoming,
-        isPast: isPast
+        isPast: isPast,
+        sortTrips: sortTrips,
+        getRelativeDate: getRelativeDate
     };
 
 })(window);
